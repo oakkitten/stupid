@@ -96,6 +96,7 @@ def get_out_of_the_room():
                 f("The key slides smoothly into the slot")
             else:
                 f("Cannot insert that in the slot")
+
         def turn_key(self):
             try:
                 self.key
@@ -115,6 +116,7 @@ def get_out_of_the_room():
             else:
                 f("You are out!")
                 nextlevel()
+
         def pull(self):
             f("The door won't move")
 
@@ -146,14 +148,14 @@ def escape_the_demon():
     class Corridor(Game, object):
         "A narrow corridor. A wild demon floats in the air, obstructing your way"
 
-        def _n_fget(self):
+        def _demon_get(self):
             if loc2.free:
                 f("""The demon is free already""")
             else:
                 f("""As you try to approach the creature, it speaks to you.\n"I've been enslaved in this corridor since the dawn of the world. Plase, *set* me free. Then I can be removed from your way.\"""")
             return loc2.demon
 
-        def _n_fset(self, value):
+        def _demon_set(self, value):
             if loc2.free:
                 f("""The demon is free already""")
             elif isinstance(value, USA) or value == USA:
@@ -164,14 +166,14 @@ def escape_the_demon():
             else:
                 f("""Angry demon pouts. "What is this? It's not it!\"""")
 
-        def _n_fdel(self):
+        def _demon_del(self):
             if loc2.free:
                 f("The demon vanishes into the darkness. You can go further!")
                 nextlevel()
             else:
                 f("""The demon croaks, "I am not free yet"\"""")
 
-        demon = property(_n_fget, _n_fset, _n_fdel, "A wild creature obstructing your way")
+        demon = property(_demon_get, _demon_set, _demon_del, "A wild creature obstructing your way")
 
 
     class Demon(Game):
@@ -199,29 +201,19 @@ def start_the_generator():
 
     class Electricity(Game):
         """Something that could light up a bulb or two"""
-        def __init__(self):
-            if loc2.switchposition=="on":
-                f("Ka-boom! There's a small explosion, and the generator goes down. Did you forget to turn the switch off?")
-                loc2.power = False
-                raise StopIteration
-            else:
-                f("The generator roars to life!")
-                loc2.power = True
         def lick(self):
             f("You die while licking the wire that comes from the generator. What were you thinking?!")
             raise RuntimeError
 
     class Switch(Game):
         """A switch on the wall\nIt's written under it, \"Don't power on the generator when the switch is on\""""
-        def __init__(self):
-            loc2.switchposition = "on"
         def switch(self):
             if loc2.power:
                 f("The lights go up!")
                 nextlevel()
             else:
-                loc2.switchposition = "on" if loc2.switchposition=="off" else "off"
-                f("Nothing happens when you flick the switch. The switch is %s now." % loc2.switchposition)
+                loc2.on = not loc2.on
+                f("Nothing happens when you flick the switch. The switch is %s now." % ("on" if loc2.on else "off"))
 
     def generator():
         try:
@@ -229,18 +221,25 @@ def start_the_generator():
                 fuel = yield sound
                 if fuel:
                     if isinstance(fuel, Fuel):
-                        yield Electricity()
-                        return
+                        if loc2.on:
+                            f("Ka-boom! There's a small explosion, and the generator goes down. Did you forget to turn the switch off?")
+                            loc2.power = False
+                            return
+                        else:
+                            f("The generator roars to life!")
+                            loc2.power = True
+                            while True:
+                                yield Electricity()
                     else:
                         f("Engine chokes on something that doesn't appear to be fuel")
             f("Engine stops forever")
         except KeyboardInterrupt:
-            f("\nYou kicked at the generator and broke it.")
+            f("\nYou kicked the generator and broke it.")
             yield Exception()
 
 
     loc2.power = False
-    loc2.switchposition = "on"
+    loc2.on = True
 
     loc.generator = generator()
     docs[loc.generator] = """Old electric generator that works on gasoline. It has no gas, so it's not working.\nBe careful with it: if you try too hard, you will break it"""
@@ -248,7 +247,7 @@ def start_the_generator():
     docs[loc.canister] = """A canister. It yields something"""
     loc.switch = Switch()
     f("\nLevel 2", color=RED)
-    f("You come out of the shadowy room into utter darkness. The only two thigs you can see is a big electric generator and a red canister beside it. There is a wire attached to the generator, it is connected to the switch on the wall. Maybe you can get yourself some light?..")
+    f("You come out of the shadowy corridor into utter darkness. The only two thigs you can see is a big electric generator and a red canister beside it. There is a wire attached to the generator, it is connected to the switch on the wall. Maybe you can get yourself some light?..")
     f("Available identifiers: " + r("generator canister switch"))
 
 #############################################################################
