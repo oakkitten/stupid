@@ -257,11 +257,14 @@ def start_the_generator():
 flow = (level for level in [get_out_of_the_room, escape_the_demon, start_the_generator])
 
 def nextlevel():
-    global loc, loc2
     try:
-        loc, loc2 = Loc(), Loc()
-        loc.restart = next(flow)
-        loc.restart()
+        restart = next(flow)
+        def rs():
+            global loc, loc2
+            loc, loc2 = Loc(), Loc()
+            restart()
+        __builtins__.restart = rs
+        rs()
     except StopIteration:
         f("\nCongratulations! You completed all the levels of the game.\nThat's it, really.")
         raise SystemExit
