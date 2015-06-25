@@ -5,12 +5,28 @@
 # This is a stupid game written in python and about python
 # It currently has 3 stupid levels, latter levels demand knowledge of certain aspects of Python
 
-import sys
+import sys, os
 from codeop import CommandCompiler
 from code import InteractiveInterpreter, softspace
 
-try: import readline
-except: pass
+try:
+    import readline
+except:
+    print "Warning: as module 'readline' not found, input will be miserable."
+
+
+GREEN, END, YELLOW, RED, BLUE = "\033[92m", "\033[0m", "\033[93m", "\033[91m", "\033[94m"
+
+if os.name == "nt":
+    try:
+       import colorama
+       colorama.init()
+    except:
+       try:
+           import tendo.ansiterm
+       except:
+           GREEN = END = YELLOW = RED = BLUE = ""
+           print "Warning: neither modules 'colorama' nor 'tendo.ansiterm' can be found. You won't see any colors."
 
 # bass class for game objects. doctstring are to be printedw
 class Game: pass
