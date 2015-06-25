@@ -1,9 +1,15 @@
+#!/usr/bin/python
+
 # This work is free. You can redistribute it and/or modify it under the
 # terms of the Do What The Fuck You Want To Public License, Version 2,
 # as published by Sam Hocevar. See http://www.wtfpl.net/ for more details.
 
 # This is a stupid game written in python and about python
 # It currently has 3 stupid levels, latter levels demand knowledge of certain aspects of Python
+
+# for the sake of repr()
+__oldname__ = __name__
+__name__ = 'game'
 
 import sys, os
 from codeop import CommandCompiler
@@ -26,18 +32,18 @@ if os.name == "nt":
            import tendo.ansiterm
        except:
            GREEN = END = YELLOW = RED = BLUE = ""
-           print "Warning: neither modules 'colorama' nor 'tendo.ansiterm' can be found. You won't see any colors."
+           print "Warning: neither module 'colorama' nor 'tendo.ansiterm' could be found. You won't see any colors."
 
-# bass class for game objects. doctstring are to be printedw
-class Game: pass
+# bass class for game objects. doctstring are to be printed
+class Game(object):
+    pass
 
 # loc/loc2 are placeholder classes for REPL's locals and hidden locals
 # docs hold docstrings for objects that don't do them (generators etc)
-class Loc: pass
-loc, loc2 = Loc(), Loc()
+class Dummy:
+    pass
+loc, loc2 = Dummy(), Dummy()
 docs = {}
-
-GREEN, END, YELLOW, RED, BLUE = "\033[92m", "\033[0m", "\033[93m", "\033[91m", "\033[94m"
 
 # colors & prints actions (et al)
 def f(text, color=GREEN):
@@ -161,7 +167,7 @@ def escape_the_demon():
     class USA(Freedom):
         "The most influential country in the world.\nIt is based on freedom."
 
-    class Corridor(Game, object):
+    class Corridor(Game):
         "A narrow corridor. A wild demon floats in the air, obstructing your way"
 
         def _demon_get(self):
@@ -218,7 +224,7 @@ def start_the_generator():
     class Electricity(Game):
         """Something that could light up a bulb or two"""
         def lick(self):
-            f("You die while licking the wire that comes from the generator. What were you thinking?!")
+            f("You get a shotck while licking the wire that comes from the generator. What were you thinking?!")
             raise RuntimeError
 
     class Switch(Game):
@@ -277,7 +283,7 @@ def nextlevel():
         restart = next(flow)
         def rs():
             global loc, loc2
-            loc, loc2 = Loc(), Loc()
+            loc, loc2 = Dummy(), Dummy()
             restart()
         __builtins__.restart = rs
         rs()
@@ -291,8 +297,8 @@ __builtins__.d = lambda *obj: [x for x in dir(*obj) if not x.startswith("_")]
 
 #############################################################################
 
-if __name__ == "__main__":
-    f("""Welcome to the python game! A stupid game written in python and about python.\n\n{2}WARNING: This is essentially a python shell and you can potentially damage stuff if you execute dangerous code.{0}\n\nIn this shell, if what you type results in a game object, that object's docstring will be printed in yellow color.\nType {1}restart(){0} to restart current level.\nFunction {1}d(){0} behaves exectly like {1}dir(){0} except it doesn't include underscored stuff.\nRemember that {1}_{0} represents the result of previous expression""".format(GREEN, YELLOW, RED))
+if __oldname__ == "__main__":
+    f("""Welcome to the python game! A stupid game written about python, in python.\n\n{2}WARNING: This is essentially a python shell and you can potentially damage stuff if you execute dangerous code.{0}\n\nIn this shell, if what you type results in a game object, that object's docstring will be printed in yellow color.\nType {1}restart(){0} to restart current level.\nFunction {1}d(){0} behaves exectly like {1}dir(){0} except it doesn't include underscored stuff.\nRemember that {1}_{0} represents the result of previous expression""".format(GREEN, YELLOW, RED))
     nextlevel()
     f("Good luck!")
     Interactor().interact()
